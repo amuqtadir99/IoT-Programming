@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Room Guardian</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+</head>
+<body>
+<header>
+  <h1>Smart Room Guardian</h1>
+  <p class="subtitle">SWE30011 IoT Programming &mdash; Assignment 2 dashboard</p>
+</header>
+
+<main>
+  <section class="cards">
+    <div class="card">
+      <h2>Temperature</h2>
+      <p class="value">{{ '%.1f'|format(latest.temperature) if latest else '--' }}&deg;C</p>
+    </div>
+    <div class="card">
+      <h2>Door / Tilt</h2>
+      <p class="value">{{ 'OPEN / TILTED' if latest and latest.door_tilt else 'CLOSED / LEVEL' }}</p>
+    </div>
+    <div class="card">
+      <h2>Fan</h2>
+      <p class="value {{ 'on' if latest and latest.fan_state else 'off' }}">
+        {{ 'ON' if latest and latest.fan_state else 'OFF' }}
+      </p>
+    </div>
+    <div class="card">
+      <h2>Alarm</h2>
+      <p class="value {{ 'on' if latest and latest.alarm_state else 'off' }}">
+        {{ 'ON' if latest and latest.alarm_state else 'OFF' }}
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Recent temperature history</h2>
+    <canvas id="tempChart" height="90"></canvas>
+  </section>
+
+  <section class="analytics">
+    <h2>Last hour analytics</h2>
+    <ul>
+      <li>Samples: {{ stats.n }}</li>
+      <li>Mean: {{ '%.2f'|format(stats.avg_t) if stats.avg_t is not none else '--' }}&deg;C</li>
+      <li>Min: {{ '%.2f'|format(stats.min_t) if stats.min_t is not none else '--' }}&deg;C</li>
+      <li>Max: {{ '%.2f'|format(stats.max_t) if stats.max_t is not none else '--' }}&deg;C</li>
+    </ul>
+  </section>
+
+  <section class="rule">
+    <h2>Automation rule</h2>
+    <form action="{{ url_for('update_threshold') }}" method="post">
+      <label>
+        Turn fan ON when temperature exceeds (&deg;C):
+        <input type="number" step="0.1" name="threshold"
+               value="{{ settings.temp_threshold if settings else 30.0 }}">
+      </label>
+      <button type="submit">Save rule</button>
+    </form>
+  </section>
+
+  <section class="controls">
+    <h2>Manual actuator control</h2>
+    <div class="control-group">
+      <span>Fan (currently: {{ settings.fan_override if settings else 'AUTO' }})</span>
+      <div class="btn-row">
+        <form action="{{ url_for('override', actuator='fan', state='AUTO') }}" method="post"><button>Auto</button></form>
+        <form action="{{ url_for('override', actuator='fan', state='ON') }}" method="post"><button>On</button></form>
+        <form action="{{ url_for('override', actuator='fan', state='OFF') }}" method="post"><button>Off</button></form>
+      </div>
+    </div>
+    <div class="control-group">
+      <span>Alarm (currently: {{ settings.alarm_override if settings else 'AUTO' }})</span>
+      <div class="btn-row">
+        <form action="{{ url_for('override', actuator='alarm', state='AUTO') }}" method="post"><button>Auto</button></form>
+        <form action="{{ url_for('override', actuator='alarm', state='ON') }}" method="post"><button>On</button></form>
+        <form action="{{ url_for('override', actuator='alarm', state='OFF') }}" method="post"><button>Off</button></form>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>Page auto-refreshes every 10 seconds.</p>
+</footer>
+
+<script>
+  const labels = {{ history | map(attribute='created_at') | map('string') | list | tojson }};
+  const temps = {{ history | map(attribute='temperature') | list | tojson }};
+
+  new Chart(document.getElementById('tempChart'), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Temperature (°C)',
+        data: temps,
+        borderColor: '#e8590c',
+        backgroundColor: 'rgba(232, 89, 12, 0.15)',
+        tension: 0.3,
+        fill: true
+      }]
+    },
+    options: {
+      scales: { y: { beginAtZero: false } },
+      plugins: { legend: { display: false } }
+    }
+  });
+
+  setTimeout(() => location.reload(), 10000);
+</script>
+</body>
+</html>
