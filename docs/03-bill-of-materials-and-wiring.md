@@ -27,6 +27,25 @@ section and I can check it before you move on.
 > a `#define SENSOR_LM35` switch ready for this (see
 > [docs/04](04-arduino-node.md)). Wiring below assumes the thermistor.
 
+**Confirmed against the ELEGOO Most Complete Starter Kit box layout:** every
+part above is in that kit — UNO R3, 5V Relay, Active Buzzer, Thermistor,
+Tilt Ball Switch, an assorted 120-piece resistor pack, LEDs, an 830
+tie-point breadboard, and jumper wires. No substitutions needed.
+
+### Picking the right resistors out of the assorted pack
+
+The 120-piece resistor pack is unlabelled loose stock in mixed values —
+read the colour bands (4 bands: digit, digit, multiplier, tolerance) to
+find the two values you need:
+
+| Value needed | Colour bands | Used for |
+|---|---|---|
+| 220 Ω | Red – Red – Brown – Gold | LED current-limit (relay load) |
+| 10 kΩ | Brown – Black – Orange – Gold | Thermistor voltage-divider |
+
+If you're unsure reading bands, a multimeter set to resistance (Ω) mode
+confirms the value directly — touch one probe to each leg.
+
 ## 3.2 Pin map (reference table)
 
 | Arduino pin | Connects to | Direction |
