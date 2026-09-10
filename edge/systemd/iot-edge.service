@@ -1,0 +1,14 @@
+[Unit]
+Description=Smart Room Guardian - edge analytics service
+After=network.target mariadb.service
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/IoT-Programming/edge
+ExecStart=/home/pi/iot-venv/bin/python3 /home/pi/IoT-Programming/edge/iot_edge_service.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
